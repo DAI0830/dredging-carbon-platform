@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 
 # ======================
 # 页面配置
@@ -11,9 +10,6 @@ st.set_page_config(
     page_icon="🚢",
     layout="wide"
 )
-
-plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
-plt.rcParams['axes.unicode_minus'] = False
 
 # ======================
 # 标题
@@ -373,18 +369,9 @@ if st.button("开始分析"):
 
         st.markdown("## 📈 不同船型碳排放对比")
 
-        fig1, ax1 = plt.subplots(figsize=(8, 4))
+        chart_df = df.set_index("船型")
 
-        ax1.bar(
-            df["船型"],
-            df["碳排放"]
-        )
-
-        ax1.set_xlabel("船型")
-        ax1.set_ylabel("碳排放（tCO₂）")
-        ax1.set_title("不同船型碳排放对比")
-
-        st.pyplot(fig1)
+        st.bar_chart(chart_df["碳排放"])
 
         # ======================
         # 图2
@@ -392,18 +379,9 @@ if st.button("开始分析"):
 
         st.markdown("## ⏳ 不同船型工期对比")
 
-        fig2, ax2 = plt.subplots(figsize=(8, 4))
+        chart_df = df.set_index("船型")
 
-        ax2.bar(
-            df["船型"],
-            df["总台时"] / 20
-        )
-
-        ax2.set_xlabel("船型")
-        ax2.set_ylabel("工期（天）")
-        ax2.set_title("不同船型工期对比")
-
-        st.pyplot(fig2)
+        st.bar_chart(chart_df["工期(天)"])
 
         # ======================
         # 图3
@@ -411,18 +389,9 @@ if st.button("开始分析"):
 
         st.markdown("## 💰 不同船型成本对比")
 
-        fig3, ax3 = plt.subplots(figsize=(8, 4))
+        chart_df = df.set_index("船型")
 
-        ax3.bar(
-            df["船型"],
-            df["成本"]
-        )
-
-        ax3.set_xlabel("船型")
-        ax3.set_ylabel("成本（元）")
-        ax3.set_title("不同船型成本对比")
-
-        st.pyplot(fig3)
+        st.bar_chart(chart_df["成本"])
         st.markdown("## 🏆 推荐方案排名")
 
         top3 = df_valid.sort_values(
