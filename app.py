@@ -1,9 +1,6 @@
 import streamlit as st
 import pandas as pd
-
-# ======================
-# 页面配置
-# ======================
+import matplotlib.pyplot as plt
 
 st.set_page_config(
     page_title="碳智·浚浦",
@@ -12,17 +9,7 @@ st.set_page_config(
 )
 
 # ======================
-# 标题
-# ======================
-
-st.title("🚢 碳智·浚浦")
-st.subheader("航道疏浚作业低碳优化与碳资产核算平台")
-
-st.markdown("---")
-
-# ======================
-# 定额数据库
-# 单位：台时 / 10000m³
+# 全局数据库
 # ======================
 
 quota = {
@@ -130,112 +117,433 @@ oil_rate = {
 
 }
 
-# ======================
-# 输入区域
-# ======================
-
-col1, col2 = st.columns(2)
-
-with col1:
-
-    workload = st.number_input(
-        "工程量（m³）",
-        min_value=10000,
-        value=100000,
-        step=10000
-    )
-
-    ship_type = st.selectbox(
-        "船型（m³/h）",
-        ["40", "80", "120", "200", "350", "500", "1450"]
-    )
-
-with col2:
-
-    soil_type = st.selectbox(
-        "土质类型",
-        sorted(list(set([x[1] for x in quota.keys()])))
-    )
-
-    impact_level = st.selectbox(
-        "客观影响等级",
-        ["一级", "二级", "三级", "四级", "五级", "六级", "七级"]
-    )
-    opt_mode = st.selectbox(
-        "优化目标",
-        [
-            "最低碳排放",
-            "最短工期",
-            "综合优化（推荐）"
-        ]
-    )
-    
-    target_days = st.number_input(
-        "工期要求（天）",
-        min_value=1,
-        value=30,
-        step=1
-    )
+if "page" not in st.session_state:
+    st.session_state.page = "home"
 
 # ======================
-# 开始分析
+# 首页
 # ======================
 
-if st.button("开始分析"):
+if st.session_state.page == "home":
 
-    if (ship_type, soil_type) not in quota:
+    st.title("🚢 碳智·浚浦")
 
-        st.error("当前船型没有该土质定额数据！")
+    st.markdown("### 航道疏浚作业低碳优化与碳资产核算平台")
 
-    else:
+    st.markdown("---")
 
-        # 定额台时
-        unit_hour = quota[(ship_type, soil_type)]
+    st.subheader("👨‍💻 项目团队")
 
-        # 客观影响修正
-        factor = impact_factor[impact_level]
+    st.write("碳路者·EcoDredge")
 
-        unit_hour = unit_hour * factor
+    st.markdown("---")
 
-        # 总施工台时
-        total_hour = workload / 10000 * unit_hour
+    tab1, tab2, tab3 = st.tabs(
+        ["作业现场1","作业现场2","作业现场3"]
+    )
 
-        # 工期
-        daily_hour = 20
-        days = total_hour / daily_hour
+    with tab1:
+        st.image("image1.jpg")
 
-        # 实际油耗
-        oil_per_hour = oil_rate[ship_type] / 1000
-        total_oil = total_hour * oil_per_hour
+    with tab2:
+        st.image("image2.jpg")
 
-        # 碳排放
-        carbon = total_oil * 3.114
+    with tab3:
+        st.image("image3.jpg")
+    st.markdown("## 📖 平台简介")
 
-        # 燃油成本
-        diesel_price = 8500
-        fuel_cost = total_oil * diesel_price
+    st.write(
+        """
+        碳智·浚浦是一款面向航道疏浚工程的
+        低碳优化决策与碳资产核算平台。
 
-        # ======================
-        # 结果展示
-        # ======================
+        平台结合工程量、土质条件、
+        船型参数等关键数据，
 
-        st.markdown("## 📋 当前方案计算结果")
+        实现：
 
-        c1, c2, c3 = st.columns(3)
+        ✅ 工期预测
 
-        c1.metric("总施工台时", f"{total_hour:.2f}")
-        c2.metric("预计工期（天）", f"{days:.2f}")
-        c3.metric("总油耗（吨）", f"{total_oil:.2f}")
+        ✅ 碳排放核算
 
-        c1, c2, c3 = st.columns(3)
+        ✅ 成本分析
 
-        c1.metric("碳排放（tCO₂）", f"{carbon:.2f}")
-        c2.metric("燃油成本（元）", f"{fuel_cost:,.0f}")
-        c3.metric("影响系数", f"{factor}")
+        ✅ 最优船型推荐
 
-        # ======================
-        # 优化推荐
-        # ======================
+        ✅ 低碳决策支持
+        """
+    )
+
+    st.markdown("---")
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+
+        if st.button(
+            "🚀 简洁版",
+            use_container_width=True
+        ):
+            st.session_state.page = "simple"
+            st.rerun()
+
+    with c2:
+
+        if st.button(
+            "✨ 精装版",
+            use_container_width=True
+        ):
+            st.session_state.page = "pro"
+            st.rerun()
+
+    st.stop()
+
+if st.session_state.page == "simple":
+# ======================
+# 标题
+# ======================
+
+    st.title("🚢 碳智·浚浦")
+    st.subheader("航道疏浚作业低碳优化与碳资产核算平台")
+
+    st.markdown("---")
+
+    # ======================
+    # 输入区域
+    # ======================
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        workload = st.number_input(
+            "工程量（m³）",
+            min_value=10000,
+            value=100000,
+            step=10000
+        )
+
+        ship_type = st.selectbox(
+            "船型（m³/h）",
+            ["40", "80", "120", "200", "350", "500", "1450"]
+        )
+
+    with col2:
+
+        soil_type = st.selectbox(
+            "土质类型",
+            sorted(list(set([x[1] for x in quota.keys()])))
+        )
+
+        impact_level = st.selectbox(
+            "客观影响等级",
+            ["一级", "二级", "三级", "四级", "五级", "六级", "七级"]
+        )
+        opt_mode = st.selectbox(
+            "优化目标",
+            [
+                "最低碳排放",
+                "最短工期",
+                "综合优化（推荐）"
+            ]
+        )
+        
+        target_days = st.number_input(
+            "工期要求（天）",
+            min_value=1,
+            value=30,
+            step=1
+        )
+
+    # ======================
+    # 开始分析
+    # ======================
+
+    if st.button("开始分析"):
+
+        if (ship_type, soil_type) not in quota:
+
+            st.error("当前船型没有该土质定额数据！")
+
+        else:
+
+            # 定额台时
+            unit_hour = quota[(ship_type, soil_type)]
+
+            # 客观影响修正
+            factor = impact_factor[impact_level]
+
+            unit_hour = unit_hour * factor
+
+            # 总施工台时
+            total_hour = workload / 10000 * unit_hour
+
+            # 工期
+            daily_hour = 20
+            days = total_hour / daily_hour
+
+            # 实际油耗
+            oil_per_hour = oil_rate[ship_type] / 1000
+            total_oil = total_hour * oil_per_hour
+
+            # 碳排放
+            carbon = total_oil * 3.114
+
+            # 燃油成本
+            diesel_price = 8500
+            fuel_cost = total_oil * diesel_price
+
+            # ======================
+            # 结果展示
+            # ======================
+
+            st.markdown("## 📋 当前方案计算结果")
+
+            c1, c2, c3 = st.columns(3)
+
+            c1.metric("总施工台时", f"{total_hour:.2f}")
+            c2.metric("预计工期（天）", f"{days:.2f}")
+            c3.metric("总油耗（吨）", f"{total_oil:.2f}")
+
+            c1, c2, c3 = st.columns(3)
+
+            c1.metric("碳排放（tCO₂）", f"{carbon:.2f}")
+            c2.metric("燃油成本（元）", f"{fuel_cost:,.0f}")
+            c3.metric("影响系数", f"{factor}")
+
+            # ======================
+            # 优化推荐
+            # ======================
+
+            result = []
+
+            for (ship, soil), unit in quota.items():
+
+                if soil == soil_type:
+
+                    hour = workload / 10000 * unit
+
+                    ship_oil_rate = oil_rate[ship] / 1000
+
+                    oil = hour * ship_oil_rate
+
+                    co2 = oil * 3.114
+
+                    cost = oil * 8500
+
+                    days_ship = hour / 20
+
+                    result.append(
+                        [
+                            ship,
+                            hour,
+                            days_ship,
+                            oil,
+                            co2,
+                            cost
+                        ]
+                    )
+
+            df = pd.DataFrame(
+                result,
+                columns=[
+                    "船型",
+                    "总台时",
+                    "工期(天)",
+                    "油耗",
+                    "碳排放",
+                    "成本"
+                ]
+            )
+            # 满足工期要求的方案
+
+            df_valid = df[
+                df["工期(天)"] <= target_days
+            ]
+
+            # 如果没有满足工期要求的船型
+
+            if len(df_valid) == 0:
+
+                st.error("当前工期要求过于严格，无可行船型")
+
+                st.stop()
+
+            # ======================
+            # 多目标优化
+            # ======================
+
+            if opt_mode == "最低碳排放":
+
+                best = df_valid.loc[
+                    df_valid["碳排放"].idxmin()
+                ]
+
+            elif opt_mode == "最短工期":
+
+                best = df_valid.loc[
+                    df_valid["工期(天)"].idxmin()
+                ]
+
+            else:
+
+                # 归一化
+
+                carbon_score = (
+                    df_valid["碳排放"]
+                    / df_valid["碳排放"].max()
+                )   
+
+                day_score = (
+                    df_valid["工期(天)"] /
+                    df_valid["工期(天)"].max()
+                )
+
+                cost_score = (
+                    df_valid["成本"] /
+                    df_valid["成本"].max()
+                )
+
+                df_valid["综合评分"] = (
+                    carbon_score * 0.3 +
+                    day_score * 0.5 +
+                    cost_score * 0.2
+                )
+
+                best = df_valid.loc[df_valid["综合评分"].idxmin()]
+
+            reduction_rate = max(
+                0,
+                (carbon - best["碳排放"]
+                ) / carbon * 100
+            )
+            st.markdown("---")
+            st.markdown("## 🤖 低碳优化推荐")
+
+            st.success(
+                f"""
+            推荐船型：{best['船型']} m³/h
+
+            预计碳排放：{best['碳排放']:.2f} tCO₂
+
+            预计工期：{best['工期(天)']:.2f} 天
+
+            预计减排率：{reduction_rate:.2f} %
+            """
+            )
+        
+
+            # ======================
+            # 数据表
+            # ======================
+
+            st.markdown("## 📊 船型方案对比")
+
+            st.dataframe(df, use_container_width=True)
+
+            # ======================
+            # 图1
+            # ======================
+
+            st.markdown("## 📈 不同船型碳排放对比")
+
+            chart_df = df.set_index("船型")
+
+            st.bar_chart(chart_df["碳排放"])
+
+            # ======================
+            # 图2
+            # ======================
+
+            st.markdown("## ⏳ 不同船型工期对比")
+
+            chart_df = df.set_index("船型")
+
+            st.bar_chart(chart_df["工期(天)"])
+
+            # ======================
+            # 图3
+            # ======================
+
+            st.markdown("## 💰 不同船型成本对比")
+
+            chart_df = df.set_index("船型")
+
+            st.bar_chart(chart_df["成本"])
+            st.markdown("## 🏆 推荐方案排名")
+
+            top3 = df_valid.sort_values(
+                by="碳排放"
+            ).head(3)
+
+            st.dataframe(
+                top3,
+                use_container_width=True
+            )
+            st.dataframe(
+                top3,
+                use_container_width=True
+            )
+
+    if st.button("🏠 返回首页"):
+        st.session_state.page = "home"
+        st.rerun()
+if st.session_state.page == "pro":
+
+    st.title("✨ 碳智·浚浦（精装版）")
+
+    st.markdown("---")
+
+    # 工程基本信息
+
+    st.markdown("## 📋 工程信息")
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        project_name = st.text_input(
+            "项目名称",
+            "某航道疏浚工程"
+        )
+
+    with c2:
+        project_place = st.text_input(
+            "施工地点",
+            "江苏省"
+        )
+
+    st.markdown("---")
+
+    # 输入参数
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+
+        workload = st.number_input(
+            "工程量（m³）",
+            min_value=10000,
+            value=100000,
+            step=10000
+        )
+
+        st.info(
+            "🤖 AI将自动推荐最优船型"
+        )
+
+    with c2:
+
+        soil_type = st.selectbox(
+            "土质类型",
+            sorted(list(set([x[1] for x in quota.keys()])))
+        )
+
+        impact_level = st.selectbox(
+            "客观影响等级",
+            ["一级","二级","三级","四级","五级","六级","七级"]
+        )
+
+    if st.button("🚀 开始智能分析"):
 
         result = []
 
@@ -243,28 +551,24 @@ if st.button("开始分析"):
 
             if soil == soil_type:
 
-                hour = workload / 10000 * unit
+                total_hour = workload / 10000 * unit
 
-                ship_oil_rate = oil_rate[ship] / 1000
+                days = total_hour / 20
 
-                oil = hour * ship_oil_rate
+                oil = total_hour * oil_rate[ship] / 1000
 
-                co2 = oil * 3.114
+                carbon = oil * 3.114
 
                 cost = oil * 8500
 
-                days_ship = hour / 20
-
-                result.append(
-                    [
-                        ship,
-                        hour,
-                        days_ship,
-                        oil,
-                        co2,
-                        cost
-                    ]
-                )
+                result.append([
+                    ship,
+                    total_hour,
+                    days,
+                    oil,
+                    carbon,
+                    cost
+                ])
 
         df = pd.DataFrame(
             result,
@@ -277,128 +581,167 @@ if st.button("开始分析"):
                 "成本"
             ]
         )
-        # 满足工期要求的方案
-
-        df_valid = df[
-            df["工期(天)"] <= target_days
-        ]
-
-        # 如果没有满足工期要求的船型
-
-        if len(df_valid) == 0:
-
-            st.error("当前工期要求过于严格，无可行船型")
-
-            st.stop()
-
-        # ======================
-        # 多目标优化
-        # ======================
-
-        if opt_mode == "最低碳排放":
-
-           best = df_valid.loc[
-                df_valid["碳排放"].idxmin()
-            ]
-
-        elif opt_mode == "最短工期":
-
-           best = df_valid.loc[
-                df_valid["工期(天)"].idxmin()
-            ]
-
-        else:
-
-            # 归一化
-
-            carbon_score = (
-                df_valid["碳排放"]
-                / df_valid["碳排放"].max()
-            )   
-
-            day_score = (
-                df_valid["工期(天)"] /
-                df_valid["工期(天)"].max()
-            )
-
-            cost_score = (
-                df_valid["成本"] /
-                df_valid["成本"].max()
-            )
-
-            df_valid["综合评分"] = (
-                carbon_score * 0.3 +
-                day_score * 0.5 +
-                cost_score * 0.2
-            )
-
-            best = df_valid.loc[df_valid["综合评分"].idxmin()]
-
-        reduction_rate = max(
-            0,
-            (carbon - best["碳排放"]
-            ) / carbon * 100
+        carbon_score = (
+            df["碳排放"] /
+            df["碳排放"].max()
         )
+
+        day_score = (
+            df["工期(天)"] /
+            df["工期(天)"].max()
+        )
+
+        cost_score = (
+            df["成本"] /
+            df["成本"].max()
+        )
+
+        df["综合评分"] = (
+            carbon_score * 0.4 +
+            day_score * 0.4 +
+            cost_score * 0.2
+        )
+        best = df.loc[
+            df["综合评分"].idxmin()
+        ]
         st.markdown("---")
-        st.markdown("## 🤖 低碳优化推荐")
+
+        st.markdown("## 🧠 AI决策解释")
+
+        best_carbon = df["碳排放"].min()
+        best_day = df["工期(天)"].min()
+
+        carbon_improve = (
+            (df["碳排放"].max() - best["碳排放"])
+            / df["碳排放"].max()
+            * 100
+        )
+
+        day_improve = (
+            (df["工期(天)"].max() - best["工期(天)"])
+            / df["工期(天)"].max()
+            * 100
+        )
 
         st.success(
             f"""
-        推荐船型：{best['船型']} m³/h
+        🤖 AI综合分析结果
 
-        预计碳排放：{best['碳排放']:.2f} tCO₂
+        推荐采用 {best["船型"]} m³/h 船型。
+
+        相比同类方案：
+
+        ✅ 工期缩短 {day_improve:.1f} %
+
+        ✅ 碳排放降低 {carbon_improve:.1f} %
+
+        ✅ 综合评分排名第一
+
+        该方案兼顾施工效率、
+        经济成本与低碳目标，
+        建议优先采用。
+        """
+        )
+
+        st.markdown("## 🤖 AI智能决策报告")
+
+        st.success(
+            f"""
+        🏆 AI推荐船型：{best['船型']} m³/h
 
         预计工期：{best['工期(天)']:.2f} 天
 
-        预计减排率：{reduction_rate:.2f} %
+        预计碳排放：{best['碳排放']:.2f} tCO₂
+
+        预计成本：{best['成本']:,.0f} 元
         """
         )
-    
+        worst = df.loc[
+            df["碳排放"].idxmax()
+        ]
 
-        # ======================
-        # 数据表
-        # ======================
+        reduce_carbon = (
+            worst["碳排放"]
+            - best["碳排放"]
+        )
 
-        st.markdown("## 📊 船型方案对比")
+        reduce_rate = (
+            reduce_carbon
+            / worst["碳排放"]
+            * 100
+        )
+        st.markdown("## 🌱 AI减排潜力分析")
 
-        st.dataframe(df, use_container_width=True)
+        st.info(
+            f"""
+        如果采用AI推荐方案：
 
-        # ======================
-        # 图1
-        # ======================
+        预计减少碳排放
 
-        st.markdown("## 📈 不同船型碳排放对比")
+        {reduce_carbon:.2f} tCO₂
 
-        chart_df = df.set_index("船型")
+        减排率
 
-        st.bar_chart(chart_df["碳排放"])
+        {reduce_rate:.2f} %
+        """
+        )
+        st.markdown("## 🏆 全船型排行榜")
 
-        # ======================
-        # 图2
-        # ======================
-
-        st.markdown("## ⏳ 不同船型工期对比")
-
-        chart_df = df.set_index("船型")
-
-        st.bar_chart(chart_df["工期(天)"])
-
-        # ======================
-        # 图3
-        # ======================
-
-        st.markdown("## 💰 不同船型成本对比")
-
-        chart_df = df.set_index("船型")
-
-        st.bar_chart(chart_df["成本"])
-        st.markdown("## 🏆 推荐方案排名")
-
-        top3 = df_valid.sort_values(
-            by="碳排放"
-        ).head(3)
+        rank_df = df.sort_values(
+            by="综合评分"
+        )
 
         st.dataframe(
-            top3,
+            rank_df,
             use_container_width=True
         )
+
+        st.markdown("## ⚠ 风险预警")
+
+        if best["工期(天)"] > 30:
+
+            st.warning(
+                "施工周期较长，存在延期风险。"
+            )
+
+        elif best["碳排放"] > 300:
+
+            st.warning(
+                "碳排放水平较高，建议进一步优化。"
+            )
+
+        else:
+
+            st.success(
+                "当前方案风险较低，可实施性较好。"
+            )
+
+        st.markdown("## 🌳 低碳效益评估")
+        worst_carbon = df["碳排放"].max()
+
+        carbon_saved = (
+            worst_carbon -
+            best["碳排放"]
+        )
+
+        tree_num = carbon_saved / 0.0183
+
+        c1, c2 = st.columns(2)
+
+        with c1:
+
+            st.metric(
+                "减排量",
+                f"{carbon_saved:.2f} tCO₂"
+            )
+
+        with c2:
+
+            st.metric(
+                "折算植树量",
+                f"{int(tree_num)} 棵"
+            )
+
+    if st.button("🏠 返回首页"):
+        st.session_state.page = "home"
+        st.rerun()
